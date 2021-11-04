@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 
 import { initializeApp } from 'firebase/app';
@@ -36,7 +36,6 @@ const App = () => {
         <h1>💬 by KP</h1>
         <SignOut/>
       </header>
-
       <section>
         {user ? <ChatRoom/> : <SignIn/>}
       </section>
@@ -69,15 +68,23 @@ const SignOut = () => {
 
 const ChatRoom = () => {
   const [limitIndex, setLimitIndex] = useState(1);
+  const [firstLoad, setFirstLoad] = useState(true);
   const messageRef = collection(firestore, 'messages');
   const q = query(
     messageRef,
     orderBy('createdAt', 'desc'),
     limit(15 * limitIndex),
   );
-  const [messages] = useCollectionData(q);
+  const [messages] = useCollectionData(q, { idField: 'id' });
+  const orderedMessages = messages?.slice(0).reverse();
   const [formValue, setFormValue] = useState('');
   const dummy = useRef(null);
+  useEffect(() => {
+    if (messages && firstLoad) {
+      dummy.current.scrollIntoView();
+      setFirstLoad(false);
+    }
+  }, [messages]);
   const sendMessage = async (e) => {
     e.preventDefault();
     const { uid, photoURL } = auth.currentUser;
@@ -91,7 +98,6 @@ const ChatRoom = () => {
     dummy.current.scrollIntoView({ behavior: 'smooth' });
     await addDoc(messageRef, dataToAdd);
   };
-  const orderedMessages = messages?.slice(0).reverse();
   return (
     <>
       <main>
@@ -103,7 +109,7 @@ const ChatRoom = () => {
         </button>
         {messages && orderedMessages.map((msg) =>
           <ChatMessage key={msg.id} message={msg} />)}
-        <div ref={dummy} />
+        <span ref={dummy} />
       </main>
       <form onSubmit={sendMessage}>
         <input
