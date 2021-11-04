@@ -6,6 +6,7 @@ import {
   getFirestore, collection, query, orderBy, limit, addDoc,
 } from 'firebase/firestore';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import 'firebase/analytics';
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
@@ -30,12 +31,14 @@ const App = () => {
   return (
     <div className="App">
       <header>
-        <div><span style={{ fontSize: 'larger' }}>💬</span> by KP</div>
+        <h1>💬 by KP</h1>
         <SignOut/>
       </header>
 
       <section>
-        {user ? <ChatRoom/> : <SignIn/>}
+        <main>
+          {user ? <ChatRoom/> : <SignIn/>}
+        </main>
       </section>
     </div>
   );
@@ -49,13 +52,18 @@ const SignIn = () => {
     signInWithPopup(auth, provider).then();
   };
   return (
-    <button onClick={signInWithGoogle}>Sign In with Google</button>
+    <button className="sign-in" onClick={signInWithGoogle}>
+      Sign In with Google
+    </button>
   );
 };
 
 const SignOut = () => {
+  const signOut = () => auth.signOut();
   return auth.currentUser && (
-    <button onClick={() => auth.signOut()}>Sign Out</button>
+    <button className="sign-out" onClick={signOut}>
+      Sign Out
+    </button>
   );
 };
 
@@ -79,15 +87,16 @@ const ChatRoom = () => {
   };
   return (
     <>
-      <div>
+      <divchat>
         {messages && messages.map((msg) =>
           <ChatMessage key={msg.id} message={msg} />)}
-        <div ref={dummy} />
-      </div>
+        <span ref={dummy} />
+      </divchat>
       <form onSubmit={sendMessage}>
         <input
           type="text"
           value={formValue}
+          placeholder='say something bro'
           onChange={(e) => setFormValue(e.target.value)}
         />
         <button type="submit" disabled={!formValue}>👉</button>
