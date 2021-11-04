@@ -36,9 +36,7 @@ const App = () => {
       </header>
 
       <section>
-        <main>
-          {user ? <ChatRoom/> : <SignIn/>}
-        </main>
+        {user ? <ChatRoom/> : <SignIn/>}
       </section>
     </div>
   );
@@ -69,7 +67,7 @@ const SignOut = () => {
 
 const ChatRoom = () => {
   const messageRef = collection(firestore, 'messages');
-  const q = query(messageRef, orderBy('createdAt'), limit(25));
+  const q = query(messageRef, orderBy('createdAt', 'desc'), limit(25));
   const [messages] = useCollectionData(q);
   const [formValue, setFormValue] = useState('');
   const dummy = useRef();
@@ -87,11 +85,11 @@ const ChatRoom = () => {
   };
   return (
     <>
-      <divchat>
-        {messages && messages.map((msg) =>
+      <main>
+        {messages && messages.reverse().map((msg) =>
           <ChatMessage key={msg.id} message={msg} />)}
         <span ref={dummy} />
-      </divchat>
+      </main>
       <form onSubmit={sendMessage}>
         <input
           type="text"
