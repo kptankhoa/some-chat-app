@@ -70,25 +70,27 @@ const ChatRoom = () => {
   const q = query(messageRef, orderBy('createdAt', 'desc'), limit(25));
   const [messages] = useCollectionData(q);
   const [formValue, setFormValue] = useState('');
-  const dummy = useRef();
+  const dummy = useRef(null);
   const sendMessage = async (e) => {
     e.preventDefault();
     const { uid, photoURL } = auth.currentUser;
     const dataToAdd = {
-      text: formValue,
+      text: !!formValue ? formValue : '🔥',
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       uid,
       photoURL,
     };
     setFormValue('');
+    dummy.current.scrollIntoView({ behavior: 'smooth' });
     await addDoc(messageRef, dataToAdd);
   };
+  const orderedMessages = messages?.slice(0).reverse();
   return (
     <>
-      <main>
-        {messages && messages.reverse().map((msg) =>
+      <main className="mainEle">
+        {messages && orderedMessages.map((msg) =>
           <ChatMessage key={msg.id} message={msg} />)}
-        <span ref={dummy} />
+        <div ref={dummy} />
       </main>
       <form onSubmit={sendMessage}>
         <input
@@ -97,7 +99,9 @@ const ChatRoom = () => {
           placeholder='say something bro'
           onChange={(e) => setFormValue(e.target.value)}
         />
-        <button type="submit" disabled={!formValue}>👉</button>
+        <button type="submit">
+          {!!formValue ? '👉' : '🔥'}
+        </button>
       </form>
     </>
   );
