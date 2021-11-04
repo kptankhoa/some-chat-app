@@ -5,7 +5,9 @@ import { initializeApp } from 'firebase/app';
 import {
   getFirestore, collection, query, orderBy, limit, addDoc,
 } from 'firebase/firestore';
-import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import {
+  getAuth, signInWithPopup, GoogleAuthProvider,
+} from 'firebase/auth';
 import 'firebase/analytics';
 
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -66,8 +68,13 @@ const SignOut = () => {
 };
 
 const ChatRoom = () => {
+  const [limitIndex, setLimitIndex] = useState(1);
   const messageRef = collection(firestore, 'messages');
-  const q = query(messageRef, orderBy('createdAt', 'desc'), limit(25));
+  const q = query(
+    messageRef,
+    orderBy('createdAt', 'desc'),
+    limit(15 * limitIndex),
+  );
   const [messages] = useCollectionData(q);
   const [formValue, setFormValue] = useState('');
   const dummy = useRef(null);
@@ -87,7 +94,13 @@ const ChatRoom = () => {
   const orderedMessages = messages?.slice(0).reverse();
   return (
     <>
-      <main className="mainEle">
+      <main>
+        <button
+          className="load-more-btn"
+          onClick={() => setLimitIndex(limitIndex + 1)}
+        >
+          Load more...
+        </button>
         {messages && orderedMessages.map((msg) =>
           <ChatMessage key={msg.id} message={msg} />)}
         <div ref={dummy} />
